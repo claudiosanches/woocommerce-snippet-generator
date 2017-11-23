@@ -22,7 +22,7 @@ class Generator
      *
      * @var string
      */
-    protected $path = './';
+    protected $path = '';
 
     /**
      * List of excluded paths.
@@ -130,9 +130,9 @@ class Generator
     /**
      * Set style.
      *
-     * @param array $style Style.
+     * @param string $style Style.
      */
-    public function setStyle(array $style)
+    public function setStyle(string $style)
     {
         $this->style = $style;
     }
@@ -140,27 +140,65 @@ class Generator
     /**
      * Get style.
      *
-     * @return array
+     * @return string
      */
-    public function getStyle(): array
+    public function getStyle(): string
     {
         return $this->style;
     }
 
-    protected function getStyleFileNames($file)
+    /**
+     * Get file name.
+     *
+     * @param  string $type File name type.
+     * @return string
+     */
+    protected function getStyleFileNames(string $type): string
     {
         // Sublime by default.
-        $files = [
+        $names = [
             'functions' => 'functions.sublime-completions',
         ];
 
         if ('vscode' === $this->style) {
-            $files = [
+            $names = [
                 'functions' => 'functions.json',
             ];
         }
 
-        return $files[$file];
+        return $names[$type];
+    }
+
+    /**
+     * Get functions JSON schema.
+     *
+     * @param  array  $functions List of functions.
+     * @return array
+     */
+    protected function getFunctionsSchema(array $functions): array
+    {
+        if ('vscode' === $this->style) {
+            $schema = [];
+
+            foreach ($functions as $id => $value) {
+                $schema[$id] = [
+                    'prefix'      => $value['trigger'],
+                    'body'        => $value['contents'],
+                    // 'description' => $value['contents'],
+                ];
+            }
+
+            return $schema;
+        }
+
+        return [
+            'scope' => 'source.php - comment - constant.other.class - entity - meta.catch - ' .
+                'meta.class - meta.function.arguments - meta.use - string - support.class - ' .
+                'variable.other, source.php meta.class.php meta.block.php meta.function.php ' .
+                'meta.block.php - comment - constant.other.class - entity - meta.catch - ' .
+                'meta.function.arguments - meta.use - string - support.class - variable.other',
+            'completions' => array_values($functions),
+        ];
     }
 
     /**
@@ -336,20 +374,13 @@ class Generator
                 }
             }
 
-            $completions[] = [
-                'trigger' => $function[0],
+            $completions[$function[0]] = [
+                'trigger'  => $function[0],
                 'contents' => $args ? $function[0] . '( ' . $args . ' )' : $function[0] . '()',
             ];
         }
 
-        return [
-            'scope' => 'source.php - comment - constant.other.class - entity - meta.catch - ' .
-                'meta.class - meta.function.arguments - meta.use - string - support.class - ' .
-                'variable.other, source.php meta.class.php meta.block.php meta.function.php ' .
-                'meta.block.php - comment - constant.other.class - entity - meta.catch - ' .
-                'meta.function.arguments - meta.use - string - support.class - variable.other',
-            'completions' => $completions,
-        ];
+        return $completions;
     }
 
     /**
@@ -368,11 +399,11 @@ class Generator
         }
 
         if ($functions = $this->getFunctions($files)) {
-            $results['functions'] = count($functions['completions']);
+            $results['functions'] = count($functions);
 
             file_put_contents(
                 $buildPath . $this->ds . $this->getStyleFileNames('functions'),
-                json_encode($functions, JSON_PRETTY_PRINT)
+                json_encode($this->getFunctionsSchema($functions), JSON_PRETTY_PRINT)
             );
         }
 

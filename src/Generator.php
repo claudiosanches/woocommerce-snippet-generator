@@ -183,7 +183,7 @@ class Generator
             foreach ($functions as $id => $value) {
                 $schema[$id] = [
                     'prefix'      => $value['trigger'],
-                    'body'        => $value['contents'],
+                    'body'        => $value['content'],
                     // 'description' => $value['contents'],
                 ];
             }
@@ -191,14 +191,23 @@ class Generator
             return $schema;
         }
 
-        return [
+        $schema = [
             'scope' => 'source.php - comment - constant.other.class - entity - meta.catch - ' .
                 'meta.class - meta.function.arguments - meta.use - string - support.class - ' .
                 'variable.other, source.php meta.class.php meta.block.php meta.function.php ' .
                 'meta.block.php - comment - constant.other.class - entity - meta.catch - ' .
                 'meta.function.arguments - meta.use - string - support.class - variable.other',
-            'completions' => array_values($functions),
+            'completions' => [],
         ];
+
+        foreach ($functions as $value) {
+            $schema['completions'][] = [
+                'trigger'  => $value['trigger'],
+                'contents' => $value['content'],
+            ];
+        }
+
+        return $schema;
     }
 
     /**
@@ -243,8 +252,8 @@ class Generator
      */
     protected function getFunctions($files): array
     {
-        $completions = [];
-        $functions   = [];
+        $results   = [];
+        $functions = [];
 
         foreach ($files as $file) {
             if (! is_file($file)) {
@@ -339,23 +348,17 @@ class Generator
             $args = '';
 
             if (! empty($function[1])) {
-                $index = 1;
+                $index       = 1;
                 $extraBraces = [];
+                $funcArgs    = explode(',', trim(preg_replace('/(\'\,*.?\')|(\$)/', '', $function[1])));
+                $countFuncs  = count($funcArgs);
 
-                foreach (explode(',', $function[1]) as $arg) {
-                    // Remove $ from start of each argument.
-                    // Also remove incorrect values caused by args like "$sep = ', '".
-                    $arg = str_replace(['$', "'"], '', trim($arg, "\n\r\t "));
+                foreach ($funcArgs as $arg) {
                     $arg = explode('=', $arg);
 
-                    // Remove any empty value.
-                    if (! $arg[0]) {
-                        continue;
-                    }
-
-                    if (1 < count($arg)) {
+                    if (1 < count($arg) && 1 < $countFuncs) {
                         $args .= '${' . ($index++) . ':';
-                        if (1 < $index) {
+                        if (2 < $index) {
                             $args .= ', ${' . ($index++) . ':' . trim($arg[0]) . '}';
                         } else {
                             $args .= '${' . ($index++) . ':' . trim($arg[0]) . '}';
@@ -365,7 +368,7 @@ class Generator
                         if (1 < $index) {
                             $args .= ', ';
                         }
-                        $args .= '${' . ($index++) . ':' . $arg[0] . '}';
+                        $args .= '${' . ($index++) . ':' . trim($arg[0]) . '}';
                     }
                 }
 
@@ -374,13 +377,13 @@ class Generator
                 }
             }
 
-            $completions[$function[0]] = [
-                'trigger'  => $function[0],
-                'contents' => $args ? $function[0] . '( ' . $args . ' )' : $function[0] . '()',
+            $results[$function[0]] = [
+                'trigger' => $function[0],
+                'content' => $args ? $function[0] . '( ' . $args . ' )' : $function[0] . '()',
             ];
         }
 
-        return $completions;
+        return $results;
     }
 
     /**

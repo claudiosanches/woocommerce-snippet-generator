@@ -184,7 +184,7 @@ class Generator
                 $schema[$id] = [
                     'prefix'      => $value['trigger'],
                     'body'        => $value['content'],
-                    // 'description' => $value['contents'],
+                    'description' => $value['description'],
                 ];
             }
 
@@ -260,11 +260,11 @@ class Generator
                 continue;
             }
 
-            $content          = file_get_contents($file);
-            $tokens           = token_get_all($content);
+            $tokens           = token_get_all(file_get_contents($file));
             $inFunction       = false;
             $inClass          = false;
             $inFunctionParams = false;
+            $functionDoc      = '';
             $parenthesisDepth = 0;
             $bracesDepth      = 0;
             $currentFunction  = '';
@@ -279,8 +279,11 @@ class Generator
                         case 'T_CLASS':
                         case 'T_ABSTRACT':
                         case 'T_INTERFACE':
-                            $inClass = true;
+                            $inClass     = true;
                             $bracesDepth = 2;
+                            break;
+                        case 'T_DOC_COMMENT':
+                            $functionDoc = $token[1];
                             break;
                         case 'T_FUNCTION':
                             $inFunction = true;
@@ -288,9 +291,9 @@ class Generator
                             break;
                         case 'T_STRING':
                             if ($inFunction && ! $got_function_name) {
-                                $currentFunction = $token[1];
+                                $currentFunction   = $token[1];
                                 $got_function_name = true;
-                                $inFunctionParams = true;
+                                $inFunctionParams  = true;
                                 continue 2;
                             }
                     }
@@ -312,7 +315,13 @@ class Generator
                                 if ($parenthesisDepth) {
                                     continue 2;
                                 }
-                                $functions[]      = [$currentFunction, trim($functionParams), $inClass, $file];
+                                $functions[]      = [
+                                    $currentFunction,
+                                    trim($functionParams),
+                                    $inClass,
+                                    $file,
+                                    $functionDoc
+                                ];
                                 $currentFunction  = '';
                                 $functionParams   = '';
                                 $inFunctionParams = false;
@@ -345,7 +354,8 @@ class Generator
             if ($function[2]) {
                 continue;
             }
-            $args = '';
+            $args        = '';
+            $description = [];
 
             if (! empty($function[1])) {
                 $index       = 1;
@@ -377,9 +387,12 @@ class Generator
                 }
             }
 
+            preg_match('/\/\*\*\n[\s\r\t]+\*\s(.*)\n/', $function[4], $description);
+
             $results[$function[0]] = [
-                'trigger' => $function[0],
-                'content' => $args ? $function[0] . '( ' . $args . ' )' : $function[0] . '()',
+                'trigger'     => $function[0],
+                'content'     => $args ? $function[0] . '( ' . $args . ' )' : $function[0] . '()',
+                'description' => ! empty($description[1]) ? $description[1] : 'Function: ' . $function[0] . '()',
             ];
         }
 

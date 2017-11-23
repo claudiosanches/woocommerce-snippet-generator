@@ -1,6 +1,6 @@
 <?php
 /**
- * Snippet generator for Woocommerce
+ * Snippet generator for WooCommerce
  */
 
 namespace ClaudioSanches\WooCommerce\Snippets;
@@ -60,6 +60,14 @@ class Generator
     ];
 
     /**
+     * Generator style.
+     * Available 'sublime' and 'vscode'.
+     *
+     * @var string
+     */
+    protected $style = 'sublime';
+
+    /**
      * Set path
      *
      * @param string $path Path.
@@ -117,6 +125,42 @@ class Generator
     public function getExcludedFiles(): array
     {
         return $this->excludedFiles;
+    }
+
+    /**
+     * Set style.
+     *
+     * @param array $style Style.
+     */
+    public function setStyle(array $style)
+    {
+        $this->style = $style;
+    }
+
+    /**
+     * Get style.
+     *
+     * @return array
+     */
+    public function getStyle(): array
+    {
+        return $this->style;
+    }
+
+    protected function getStyleFileNames($file)
+    {
+        // Sublime by default.
+        $files = [
+            'functions' => 'functions.sublime-completions',
+        ];
+
+        if ('vscode' === $this->style) {
+            $files = [
+                'functions' => 'functions.json',
+            ];
+        }
+
+        return $files[$file];
     }
 
     /**
@@ -317,7 +361,7 @@ class Generator
     {
         $files     = $this->getFiles();
         $results   = [];
-        $buildPath = __DIR__ . '/../build';
+        $buildPath = __DIR__ . "{$this->ds}..{$this->ds}build{$this->ds}{$this->style}";
 
         if (!file_exists($buildPath)) {
             mkdir($buildPath, 0755);
@@ -325,8 +369,9 @@ class Generator
 
         if ($functions = $this->getFunctions($files)) {
             $results['functions'] = count($functions['completions']);
+
             file_put_contents(
-                $buildPath . '/functions.sublime-completions',
+                $buildPath . $this->ds . $this->getStyleFileNames('functions'),
                 json_encode($functions, JSON_PRETTY_PRINT)
             );
         }

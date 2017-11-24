@@ -12,11 +12,11 @@ class Filters extends Actions
 {
 
     /**
-     * Get Hooks.
+     * Get data for schema.
      *
      * @return array
      */
-    protected function getHooks(): array
+    public function getData(): array
     {
         $results = [];
 

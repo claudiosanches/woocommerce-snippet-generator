@@ -12,48 +12,6 @@ class Actions extends Parser
 {
 
     /**
-     * Get schema.
-     *
-     * @return array
-     */
-    public function getSchema(): array
-    {
-        $hooks = $this->getHooks();
-
-        if ('vscode' === $this->style) {
-            $schema = [];
-
-            foreach ($hooks as $value) {
-                $schema[$value['trigger']] = [
-                    'prefix'      => $value['trigger'],
-                    'body'        => $value['content'],
-                    'description' => $value['description'],
-                ];
-            }
-
-            return $schema;
-        }
-
-        $schema = [
-            'scope' => 'source.php - comment - constant.other.class - entity - meta.catch - ' .
-                'meta.class - meta.function.arguments - meta.use - string - support.class - ' .
-                'variable.other, source.php meta.class.php meta.block.php meta.function.php ' .
-                'meta.block.php - comment - constant.other.class - entity - meta.catch - ' .
-                'meta.function.arguments - meta.use - string - support.class - variable.other',
-            'completions' => [],
-        ];
-
-        foreach ($hooks as $value) {
-            $schema['completions'][] = [
-                'trigger'  => $value['trigger'],
-                'contents' => $value['content'],
-            ];
-        }
-
-        return $schema;
-    }
-
-    /**
      * Get hook name.
      *
      * @param  string $hook Hook.
@@ -109,11 +67,11 @@ class Actions extends Parser
     }
 
     /**
-     * Get Hooks.
+     * Get data for schema.
      *
      * @return array
      */
-    protected function getHooks(): array
+    public function getData(): array
     {
         $results = [];
 

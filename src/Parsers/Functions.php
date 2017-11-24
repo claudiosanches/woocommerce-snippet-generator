@@ -12,53 +12,11 @@ class Functions extends Parser
 {
 
     /**
-     * Get schema.
+     * Get data for schema.
      *
      * @return array
      */
-    public function getSchema(): array
-    {
-        $functions = $this->getFunctions();
-
-        if ('vscode' === $this->style) {
-            $schema = [];
-
-            foreach ($functions as $value) {
-                $schema[$value['trigger']] = [
-                    'prefix'      => $value['trigger'],
-                    'body'        => $value['content'],
-                    'description' => $value['description'],
-                ];
-            }
-
-            return $schema;
-        }
-
-        $schema = [
-            'scope' => 'source.php - comment - constant.other.class - entity - meta.catch - ' .
-                'meta.class - meta.function.arguments - meta.use - string - support.class - ' .
-                'variable.other, source.php meta.class.php meta.block.php meta.function.php ' .
-                'meta.block.php - comment - constant.other.class - entity - meta.catch - ' .
-                'meta.function.arguments - meta.use - string - support.class - variable.other',
-            'completions' => [],
-        ];
-
-        foreach ($functions as $value) {
-            $schema['completions'][] = [
-                'trigger'  => $value['trigger'],
-                'contents' => $value['content'],
-            ];
-        }
-
-        return $schema;
-    }
-
-    /**
-     * Get functions.
-     *
-     * @return array
-     */
-    protected function getFunctions(): array
+    public function getData(): array
     {
         $results   = [];
         $functions = [];

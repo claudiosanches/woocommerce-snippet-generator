@@ -16,4 +16,11 @@ interface ParserInterface
      * @return array
      */
     public function getSchema();
+
+    /**
+     * Get data for schema.
+     *
+     * @return array
+     */
+    public function getData();
 }

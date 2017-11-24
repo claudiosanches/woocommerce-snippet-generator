@@ -34,4 +34,46 @@ abstract class Parser implements ParserInterface
         $this->files = $files;
         $this->style = $style;
     }
+
+    /**
+     * Get schema.
+     *
+     * @return array
+     */
+    public function getSchema(): array
+    {
+        $data = $this->getData();
+
+        if ('vscode' === $this->style) {
+            $schema = [];
+
+            foreach ($data as $value) {
+                $schema[$value['trigger']] = [
+                    'prefix'      => $value['trigger'],
+                    'body'        => $value['content'],
+                    'description' => $value['description'],
+                ];
+            }
+
+            return $schema;
+        }
+
+        $schema = [
+            'scope' => 'source.php - comment - constant.other.class - entity - meta.catch - ' .
+                'meta.class - meta.function.arguments - meta.use - string - support.class - ' .
+                'variable.other, source.php meta.class.php meta.block.php meta.function.php ' .
+                'meta.block.php - comment - constant.other.class - entity - meta.catch - ' .
+                'meta.function.arguments - meta.use - string - support.class - variable.other',
+            'completions' => [],
+        ];
+
+        foreach ($data as $value) {
+            $schema['completions'][] = [
+                'trigger'  => $value['trigger'],
+                'contents' => $value['content'],
+            ];
+        }
+
+        return $schema;
+    }
 }

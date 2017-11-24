@@ -94,7 +94,7 @@ class Actions extends Parser
                 ];
                 $results['aa_' . $actionName] = [
                     'content'     => $this->getHookOutput($actionName, 'action'),
-                    'description' => 'Action: ' . $actionName,
+                    'description' => 'Action snippet: ' . $actionName,
                 ];
             }
         }

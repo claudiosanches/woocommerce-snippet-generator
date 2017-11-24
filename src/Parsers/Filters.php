@@ -38,7 +38,7 @@ class Filters extends Actions
                 ];
                 $results['af_' . $filterName] = [
                     'content'     => $this->getHookOutput($filterName, 'filter'),
-                    'description' => 'Filter: ' . $filterName,
+                    'description' => 'Filter snippet: ' . $filterName,
                 ];
             }
         }

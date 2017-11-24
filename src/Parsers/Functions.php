@@ -12,13 +12,36 @@ class Functions extends Parser
 {
 
     /**
-     * Get data for schema.
+     * Get description.
+     *
+     * @param  string $functionName   Function name.
+     * @param  string $rawDescription Raw description.
+     * @return string
+     */
+    protected function getDescription(string $functionName, string $rawDescription): string
+    {
+        $default = 'Function: ' . $functionName . '()';
+
+        if ('vscode' !== $this->style) {
+            return $default;
+        }
+
+        preg_match('/\/\*\*\n[\s\r\t]+\*\s(.*)\n/', $rawDescription, $description);
+
+        if (! empty($description[1])) {
+            return $description[1];
+        }
+
+        return $default;
+    }
+
+    /**
+     * Get functions.
      *
      * @return array
      */
-    public function getData(): array
+    protected function getFunctions(): array
     {
-        $results   = [];
         $functions = [];
 
         foreach ($this->files as $file) {
@@ -116,7 +139,19 @@ class Functions extends Parser
             $tokens = null;
         }
 
-        foreach ($functions as $key => $function) {
+        return $functions;
+    }
+
+    /**
+     * Get data for schema.
+     *
+     * @return array
+     */
+    public function getData(): array
+    {
+        $results = [];
+
+        foreach ($this->getFunctions() as $key => $function) {
             if ($function[2]) {
                 continue;
             }
@@ -153,11 +188,9 @@ class Functions extends Parser
                 }
             }
 
-            preg_match('/\/\*\*\n[\s\r\t]+\*\s(.*)\n/', $function[4], $description);
-
             $results[$function[0]] = [
                 'content'     => $args ? $function[0] . '( ' . $args . ' )' : $function[0] . '()',
-                'description' => ! empty($description[1]) ? $description[1] : 'Function: ' . $function[0] . '()',
+                'description' => $this->getDescription($function[0], $function[4]),
             ];
         }
 

@@ -5,9 +5,7 @@
 
 namespace ClaudioSanches\WooCommerce\Snippets;
 
-use ClaudioSanches\WooCommerce\Snippets\Parsers\Functions;
-use ClaudioSanches\WooCommerce\Snippets\Parsers\Actions;
-use ClaudioSanches\WooCommerce\Snippets\Parsers\Filters;
+use ClaudioSanches\WooCommerce\Snippets\Parsers;
 
 /**
  * Generator class
@@ -224,7 +222,7 @@ class Generator
         }
 
         // Functions.
-        $functions = new Functions($files, $this->style);
+        $functions = new Parsers\Functions($files, $this->style);
         if ($functionsSchema = $functions->getSchema()) {
             $results['functions'] = count($functionsSchema);
 
@@ -235,7 +233,7 @@ class Generator
         }
 
         // Actions.
-        $actions = new Actions($files, $this->style);
+        $actions = new Parsers\Actions($files, $this->style);
         if ($actionsSchema = $actions->getSchema()) {
             $results['actions'] = count($actionsSchema) / 2;
 
@@ -246,13 +244,24 @@ class Generator
         }
 
         // Filters.
-        $filters = new Filters($files, $this->style);
+        $filters = new Parsers\Filters($files, $this->style);
         if ($filtersSchema = $filters->getSchema()) {
             $results['filters'] = count($filtersSchema) / 2;
 
             file_put_contents(
                 $buildPath . $this->ds . $this->getSnippetsFilename('filters'),
                 json_encode($filtersSchema, JSON_PRETTY_PRINT)
+            );
+        }
+
+        // Constants.
+        $constants = new Parsers\Constants($files, $this->style);
+        if ($constantsSchema = $constants->getSchema()) {
+            $results['constants'] = count($constantsSchema);
+
+            file_put_contents(
+                $buildPath . $this->ds . $this->getSnippetsFilename('constants'),
+                json_encode($constantsSchema, JSON_PRETTY_PRINT)
             );
         }
 

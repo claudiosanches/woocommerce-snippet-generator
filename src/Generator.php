@@ -5,6 +5,10 @@
 
 namespace ClaudioSanches\WooCommerce\Snippets;
 
+use ClaudioSanches\WooCommerce\Snippets\Parsers\Functions;
+use ClaudioSanches\WooCommerce\Snippets\Parsers\Actions;
+use ClaudioSanches\WooCommerce\Snippets\Parsers\Filters;
+
 /**
  * Generator class
  */
@@ -153,61 +157,21 @@ class Generator
      * @param  string $type File name type.
      * @return string
      */
-    protected function getStyleFileNames(string $type): string
+    protected function getSnippetsFilename(string $type): string
     {
         // Sublime by default.
-        $names = [
-            'functions' => 'functions.sublime-completions',
-        ];
+        $suffix = 'sublime-completions';
 
-        if ('vscode' === $this->style) {
-            $names = [
-                'functions' => 'functions.json',
-            ];
+        switch ($this->style) {
+            case 'vscode':
+                $suffix = '.json';
+                break;
+            case 'atom':
+                $suffix = '.json';
+                break;
         }
 
-        return $names[$type];
-    }
-
-    /**
-     * Get functions JSON schema.
-     *
-     * @param  array  $functions List of functions.
-     * @return array
-     */
-    protected function getFunctionsSchema(array $functions): array
-    {
-        if ('vscode' === $this->style) {
-            $schema = [];
-
-            foreach ($functions as $id => $value) {
-                $schema[$id] = [
-                    'prefix'      => $value['trigger'],
-                    'body'        => $value['content'],
-                    'description' => $value['description'],
-                ];
-            }
-
-            return $schema;
-        }
-
-        $schema = [
-            'scope' => 'source.php - comment - constant.other.class - entity - meta.catch - ' .
-                'meta.class - meta.function.arguments - meta.use - string - support.class - ' .
-                'variable.other, source.php meta.class.php meta.block.php meta.function.php ' .
-                'meta.block.php - comment - constant.other.class - entity - meta.catch - ' .
-                'meta.function.arguments - meta.use - string - support.class - variable.other',
-            'completions' => [],
-        ];
-
-        foreach ($functions as $value) {
-            $schema['completions'][] = [
-                'trigger'  => $value['trigger'],
-                'contents' => $value['content'],
-            ];
-        }
-
-        return $schema;
+        return $type . $suffix;
     }
 
     /**
@@ -226,14 +190,14 @@ class Generator
 
                 while (isset($items[$i])) {
                     if (! in_array($items[$i], $this->getExcludedPaths(), true)) {
-                        $current_file = "{$currentDir}{$this->ds}{$items[$i]}";
+                        $currentFile = "{$currentDir}{$this->ds}{$items[$i]}";
 
-                        if (is_file($current_file)
+                        if (is_file($currentFile)
                             && strpos($items[$i], '.php')
                             && ! in_array($items[$i], $this->getExcludedFiles(), true)) {
                             $path[] = "{$currentDir}{$this->ds}{$items[$i]}";
-                        } elseif (is_dir($current_file)) {
-                            $stack[] = $current_file;
+                        } elseif (is_dir($currentFile)) {
+                            $stack[] = $currentFile;
                         }
                     }
                     $i++;
@@ -242,161 +206,6 @@ class Generator
         }
 
         return $path;
-    }
-
-    /**
-     * Get functions.
-     *
-     * @param  array $files List of files.
-     * @return array
-     */
-    protected function getFunctions($files): array
-    {
-        $results   = [];
-        $functions = [];
-
-        foreach ($files as $file) {
-            if (! is_file($file)) {
-                continue;
-            }
-
-            $tokens           = token_get_all(file_get_contents($file));
-            $inFunction       = false;
-            $inClass          = false;
-            $inFunctionParams = false;
-            $functionDoc      = '';
-            $parenthesisDepth = 0;
-            $bracesDepth      = 0;
-            $currentFunction  = '';
-            $functionParams   = '';
-
-            foreach ($tokens as $token) {
-                if (is_array($token)) {
-                    switch (token_name($token[0])) {
-                        case 'T_CURLY_OPEN':
-                            $bracesDepth++;
-                            break;
-                        case 'T_CLASS':
-                        case 'T_ABSTRACT':
-                        case 'T_INTERFACE':
-                            $inClass     = true;
-                            $bracesDepth = 2;
-                            break;
-                        case 'T_DOC_COMMENT':
-                            $functionDoc = $token[1];
-                            break;
-                        case 'T_FUNCTION':
-                            $inFunction = true;
-                            $got_function_name = false;
-                            break;
-                        case 'T_STRING':
-                            if ($inFunction && ! $got_function_name) {
-                                $currentFunction   = $token[1];
-                                $got_function_name = true;
-                                $inFunctionParams  = true;
-                                continue 2;
-                            }
-                    }
-
-                    if ($inFunctionParams && ! $inClass) {
-                        $functionParams .= $token[1];
-                    }
-                } else {
-                    if ($inFunctionParams) {
-                        switch ($token) {
-                            case '(':
-                                $parenthesisDepth++;
-                                continue 2;
-                                break;
-                            case ')':
-                                if ($parenthesisDepth) {
-                                    $parenthesisDepth--;
-                                }
-                                if ($parenthesisDepth) {
-                                    continue 2;
-                                }
-                                $functions[]      = [
-                                    $currentFunction,
-                                    trim($functionParams),
-                                    $inClass,
-                                    $file,
-                                    $functionDoc
-                                ];
-                                $currentFunction  = '';
-                                $functionParams   = '';
-                                $inFunctionParams = false;
-                                continue 2;
-                                break;
-                        }
-                        $functionParams .= $token;
-                    } else {
-                        switch ($token) {
-                            case '{':
-                                $bracesDepth++;
-                                continue 2;
-                                break;
-                            case '}':
-                                $bracesDepth--;
-                                if (! $bracesDepth) {
-                                    $inClass = false;
-                                }
-                                continue 2;
-                                break;
-                        }
-                    }
-                }
-            }
-
-            $tokens = null;
-        }
-
-        foreach ($functions as $key => $function) {
-            if ($function[2]) {
-                continue;
-            }
-            $args        = '';
-            $description = [];
-
-            if (! empty($function[1])) {
-                $index       = 1;
-                $extraBraces = [];
-                $funcArgs    = explode(',', trim(preg_replace('/(\'\,*.?\')|(\$)/', '', $function[1])));
-                $countFuncs  = count($funcArgs);
-
-                foreach ($funcArgs as $arg) {
-                    $arg = explode('=', $arg);
-
-                    if (1 < count($arg) && 1 < $countFuncs) {
-                        $args .= '${' . ($index++) . ':';
-                        if (2 < $index) {
-                            $args .= ', ${' . ($index++) . ':' . trim($arg[0]) . '}';
-                        } else {
-                            $args .= '${' . ($index++) . ':' . trim($arg[0]) . '}';
-                        }
-                        $extraBraces[] = '}';
-                    } else {
-                        if (1 < $index) {
-                            $args .= ', ';
-                        }
-                        $args .= '${' . ($index++) . ':' . trim($arg[0]) . '}';
-                    }
-                }
-
-                foreach ($extraBraces as $brace) {
-                    $args .= $brace;
-                }
-            }
-
-            preg_match('/\/\*\*\n[\s\r\t]+\*\s(.*)\n/', $function[4], $description);
-
-            $results[$function[0]] = [
-                'trigger'     => $function[0],
-                'content'     => $args ? $function[0] . '( ' . $args . ' )' : $function[0] . '()',
-                'description' => ! empty($description[1]) ? $description[1] : 'Function: ' . $function[0] . '()',
-            ];
-        }
-
-        return $results;
     }
 
     /**
@@ -411,15 +220,39 @@ class Generator
         $buildPath = __DIR__ . "{$this->ds}..{$this->ds}build{$this->ds}{$this->style}";
 
         if (!file_exists($buildPath)) {
-            mkdir($buildPath, 0755);
+            mkdir($buildPath, 0755, true);
         }
 
-        if ($functions = $this->getFunctions($files)) {
-            $results['functions'] = count($functions);
+        // Functions.
+        $functions = new Functions($files, $this->style);
+        if ($functionsSchema = $functions->getSchema()) {
+            $results['functions'] = count($functionsSchema);
 
             file_put_contents(
-                $buildPath . $this->ds . $this->getStyleFileNames('functions'),
-                json_encode($this->getFunctionsSchema($functions), JSON_PRETTY_PRINT)
+                $buildPath . $this->ds . $this->getSnippetsFilename('functions'),
+                json_encode($functionsSchema, JSON_PRETTY_PRINT)
+            );
+        }
+
+        // Actions.
+        $actions = new Actions($files, $this->style);
+        if ($actionsSchema = $actions->getSchema()) {
+            $results['actions'] = count($actionsSchema) / 2;
+
+            file_put_contents(
+                $buildPath . $this->ds . $this->getSnippetsFilename('actions'),
+                json_encode($actionsSchema, JSON_PRETTY_PRINT)
+            );
+        }
+
+        // Filters.
+        $filters = new Filters($files, $this->style);
+        if ($filtersSchema = $filters->getSchema()) {
+            $results['filters'] = count($filtersSchema) / 2;
+
+            file_put_contents(
+                $buildPath . $this->ds . $this->getSnippetsFilename('filters'),
+                json_encode($filtersSchema, JSON_PRETTY_PRINT)
             );
         }
 

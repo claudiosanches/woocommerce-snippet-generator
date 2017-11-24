@@ -7,3 +7,10 @@ end_of_line = lf
 charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
+
+[*.{md,txt,json,yml}]
+trim_trailing_whitespace = false
+
+[*.{json,yml}]
+insert_final_newline = false
+indent_size = 4

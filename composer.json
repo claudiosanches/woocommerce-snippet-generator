@@ -1,0 +1,24 @@
+{
+    "name": "claudiosanches/woocommerce-snippet-generator",
+    "description": "",
+    "type": "library",
+    "license": "GPLv3",
+    "authors": [
+        {
+            "name": "Claudio Sanches"
+        }
+    ],
+    "keywords": [
+        "Generator",
+        "WordPress",
+        "WooCommerce"
+    ],
+    "require": {
+        "php": ">= 7.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "ClaudioSanches\\WooCommerce\\Snippets\\": ["src"]
+        }
+    }
+}

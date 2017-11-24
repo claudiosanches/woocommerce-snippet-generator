@@ -156,7 +156,6 @@ class Functions extends Parser
             preg_match('/\/\*\*\n[\s\r\t]+\*\s(.*)\n/', $function[4], $description);
 
             $results[$function[0]] = [
-                'trigger'     => $function[0],
                 'content'     => $args ? $function[0] . '( ' . $args . ' )' : $function[0] . '()',
                 'description' => ! empty($description[1]) ? $description[1] : 'Function: ' . $function[0] . '()',
             ];

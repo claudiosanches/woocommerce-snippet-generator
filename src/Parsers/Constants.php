@@ -47,7 +47,6 @@ class Constants extends Parser
                 $constantName = $this->getConstantName($constant);
 
                 $results[$constantName] = [
-                    'trigger'     => $constantName,
                     'content'     => $constantName,
                     'description' => 'Constant: ' . $constantName,
                 ];

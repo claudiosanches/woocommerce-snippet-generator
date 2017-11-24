@@ -47,9 +47,9 @@ abstract class Parser implements ParserInterface
         if ('vscode' === $this->style) {
             $schema = [];
 
-            foreach ($data as $value) {
-                $schema[$value['trigger']] = [
-                    'prefix'      => $value['trigger'],
+            foreach ($data as $key => $value) {
+                $schema[$key] = [
+                    'prefix'      => $key,
                     'body'        => $value['content'],
                     'description' => $value['description'],
                 ];
@@ -67,9 +67,9 @@ abstract class Parser implements ParserInterface
             'completions' => [],
         ];
 
-        foreach ($data as $value) {
+        foreach ($data as $key => $value) {
             $schema['completions'][] = [
-                'trigger'  => $value['trigger'],
+                'trigger'  => $key,
                 'contents' => $value['content'],
             ];
         }

@@ -89,12 +89,10 @@ class Actions extends Parser
                 $actionName = $this->getHookName($action);
 
                 $results[$actionName] = [
-                    'trigger'     => $actionName,
                     'content'     => $this->getHookOutput($actionName),
                     'description' => 'Action: ' . $actionName,
                 ];
                 $results['aa_' . $actionName] = [
-                    'trigger'     => 'aa_' . $actionName,
                     'content'     => $this->getHookOutput($actionName, 'action'),
                     'description' => 'Action: ' . $actionName,
                 ];

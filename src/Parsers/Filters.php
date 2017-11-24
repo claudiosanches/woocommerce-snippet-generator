@@ -33,12 +33,10 @@ class Filters extends Actions
                 $filterName = $this->getHookName($filter);
 
                 $results[$filterName] = [
-                    'trigger'     => $filterName,
                     'content'     => $this->getHookOutput($filterName),
                     'description' => 'Filter: ' . $filterName,
                 ];
                 $results['af_' . $filterName] = [
-                    'trigger'     => 'af_' . $filterName,
                     'content'     => $this->getHookOutput($filterName, 'filter'),
                     'description' => 'Filter: ' . $filterName,
                 ];

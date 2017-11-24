@@ -63,7 +63,7 @@ class Generator
 
     /**
      * Generator style.
-     * Available 'sublime' and 'vscode'.
+     * Available 'sublime', 'vscode' and 'atom'.
      *
      * @var string
      */
@@ -189,7 +189,7 @@ class Generator
                 $count = count($schema);
                 break;
             case 'atom':
-                $count = 0;
+                $count = count($schema['.source.php']);
                 break;
         }
 

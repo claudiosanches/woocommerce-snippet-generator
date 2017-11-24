@@ -56,6 +56,17 @@ abstract class Parser implements ParserInterface
             }
 
             return $schema;
+        } elseif ('atom' === $this->style) {
+            $schema = [];
+
+            foreach ($data as $key => $value) {
+                $schema['.source.php'][$value['description']] = [
+                    'prefix' => $key,
+                    'body'   => $value['content'],
+                ];
+            }
+
+            return $schema;
         }
 
         $schema = [

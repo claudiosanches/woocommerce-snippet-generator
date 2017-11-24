@@ -88,12 +88,12 @@ class Actions extends Parser
             foreach ($actions[2] as $action) {
                 $actionName = $this->getHookName($action);
 
-                $results[] = [
+                $results[$actionName] = [
                     'trigger'     => $actionName,
                     'content'     => $this->getHookOutput($actionName),
                     'description' => 'Action: ' . $actionName,
                 ];
-                $results[] = [
+                $results['aa_' . $actionName] = [
                     'trigger'     => 'aa_' . $actionName,
                     'content'     => $this->getHookOutput($actionName, 'action'),
                     'description' => 'Action: ' . $actionName,

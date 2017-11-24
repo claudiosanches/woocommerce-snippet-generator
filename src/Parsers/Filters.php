@@ -32,12 +32,12 @@ class Filters extends Actions
             foreach ($filters[2] as $filter) {
                 $filterName = $this->getHookName($filter);
 
-                $results[] = [
+                $results[$filterName] = [
                     'trigger'     => $filterName,
                     'content'     => $this->getHookOutput($filterName),
                     'description' => 'Filter: ' . $filterName,
                 ];
-                $results[] = [
+                $results['af_' . $filterName] = [
                     'trigger'     => 'af_' . $filterName,
                     'content'     => $this->getHookOutput($filterName, 'filter'),
                     'description' => 'Filter: ' . $filterName,

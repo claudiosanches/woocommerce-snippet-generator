@@ -46,7 +46,7 @@ class Constants extends Parser
             foreach ($constants[3] as $constant) {
                 $constantName = $this->getConstantName($constant);
 
-                $results[] = [
+                $results[$constantName] = [
                     'trigger'     => $constantName,
                     'content'     => $constantName,
                     'description' => 'Constant: ' . $constantName,

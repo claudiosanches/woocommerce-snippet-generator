@@ -158,7 +158,7 @@ class Generator
     protected function getSnippetsFilename(string $type): string
     {
         // Sublime by default.
-        $suffix = 'sublime-completions';
+        $suffix = '.sublime-completions';
 
         switch ($this->style) {
             case 'vscode':
@@ -170,6 +170,30 @@ class Generator
         }
 
         return $type . $suffix;
+    }
+
+    /**
+     * Get snippets count.
+     *
+     * @param  array $schema Schema.
+     * @return int
+     */
+    protected function getCount(array $schema): string
+    {
+        $count = 0;
+        switch ($this->style) {
+            case 'sublime':
+                $count = count($schema['completions']);
+                break;
+            case 'vscode':
+                $count = count($schema);
+                break;
+            case 'atom':
+                $count = 0;
+                break;
+        }
+
+        return $count;
     }
 
     /**
@@ -224,7 +248,7 @@ class Generator
         // Functions.
         $functions = new Parsers\Functions($files, $this->style);
         if ($functionsSchema = $functions->getSchema()) {
-            $results['functions'] = count($functionsSchema);
+            $results['functions'] = $this->getCount($functionsSchema);
 
             file_put_contents(
                 $buildPath . $this->ds . $this->getSnippetsFilename('functions'),
@@ -235,7 +259,7 @@ class Generator
         // Actions.
         $actions = new Parsers\Actions($files, $this->style);
         if ($actionsSchema = $actions->getSchema()) {
-            $results['actions'] = count($actionsSchema) / 2;
+            $results['actions'] = $this->getCount($actionsSchema) / 2;
 
             file_put_contents(
                 $buildPath . $this->ds . $this->getSnippetsFilename('actions'),
@@ -246,7 +270,7 @@ class Generator
         // Filters.
         $filters = new Parsers\Filters($files, $this->style);
         if ($filtersSchema = $filters->getSchema()) {
-            $results['filters'] = count($filtersSchema) / 2;
+            $results['filters'] = $this->getCount($filtersSchema) / 2;
 
             file_put_contents(
                 $buildPath . $this->ds . $this->getSnippetsFilename('filters'),
@@ -257,7 +281,7 @@ class Generator
         // Constants.
         $constants = new Parsers\Constants($files, $this->style);
         if ($constantsSchema = $constants->getSchema()) {
-            $results['constants'] = count($constantsSchema);
+            $results['constants'] = $this->getCount($constantsSchema);
 
             file_put_contents(
                 $buildPath . $this->ds . $this->getSnippetsFilename('constants'),
